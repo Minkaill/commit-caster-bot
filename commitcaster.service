@@ -1,0 +1,37 @@
+[Unit]
+Description=CommitCaster - GitHub to Telegram Bot
+Documentation=https://github.com/yourusername/CommitCaster
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+WorkingDirectory=/home/YOUR_USERNAME/CommitCaster
+ExecStart=/home/YOUR_USERNAME/CommitCaster/commitcaster
+
+# Переменные окружения (или используйте EnvironmentFile)
+EnvironmentFile=/home/YOUR_USERNAME/CommitCaster/.env
+
+# Перезапуск при падении
+Restart=always
+RestartSec=10
+
+# Лимиты
+LimitNOFILE=65536
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=commitcaster
+
+# Безопасность
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/YOUR_USERNAME/CommitCaster
+
+[Install]
+WantedBy=multi-user.target
