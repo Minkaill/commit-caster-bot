@@ -44,6 +44,9 @@ func (s *TelegramService) SendMessage(text string) error {
 		return fmt.Errorf("no configuration available")
 	}
 
+	// Debug logging
+	fmt.Printf("Telegram: Sending to channel '%s' with token '%s...'\n", channelID, botToken[:20])
+
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", botToken)
 
 	message := TelegramMessage{
