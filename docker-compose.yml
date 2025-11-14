@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: commitcaster-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: useEffectCommitCaster228
+      POSTGRES_DB: commitcaster
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - commitcaster-network
+
+  # CommitCaster App
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: commitcaster-app
+    environment:
+      # Database (тот же пароль что выше!)
+      DATABASE_URL: postgres://postgres:useEffectCommitCaster228@postgres:5432/commitcaster
+
+      # JWT Secret - ОБЯЗАТЕЛЬНО ИЗМЕНИ на случайную строку!
+      # Сгенерируй: openssl rand -hex 32
+      JWT_SECRET: CHANGE_THIS_TO_YOUR_RANDOM_SECRET_KEY_32_CHARS
+
+      # Base URL
+      BASE_URL: http://localhost:8080
+
+      # Port
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - commitcaster-network
+
+networks:
+  commitcaster-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

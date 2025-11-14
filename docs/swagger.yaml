@@ -1,0 +1,272 @@
+basePath: /api
+definitions:
+  handlers.AuthResponse:
+    properties:
+      token:
+        type: string
+      webhook_token:
+        type: string
+      webhook_url:
+        type: string
+    type: object
+  handlers.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  handlers.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  handlers.SettingsRequest:
+    properties:
+      ai_model:
+        type: string
+      custom_prompt:
+        type: string
+      github_secret:
+        type: string
+      groq_api_key:
+        type: string
+      max_commits:
+        type: integer
+      post_language:
+        type: string
+      telegram_bot_token:
+        type: string
+      telegram_channel_id:
+        type: string
+    type: object
+  models.UserSettings:
+    properties:
+      ai_model:
+        type: string
+      created_at:
+        type: string
+      custom_prompt:
+        type: string
+      github_secret:
+        description: GitHub webhook secret
+        type: string
+      groq_api_key:
+        description: Groq API для AI
+        type: string
+      id:
+        type: integer
+      is_active:
+        description: Дополнительные настройки
+        type: boolean
+      max_commits:
+        type: integer
+      post_language:
+        type: string
+      telegram_bot_token:
+        description: Telegram настройки
+        type: string
+      telegram_channel_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@commitcaster.com
+    name: API Support
+  description: API для автоматической публикации GitHub коммитов в Telegram с помощью
+    AI
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: CommitCaster API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизует пользователя и возвращает JWT токен
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Авторизация пользователя
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт нового пользователя и возвращает JWT токен
+      parameters:
+      - description: User registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Регистрация нового пользователя
+      tags:
+      - auth
+  /settings:
+    get:
+      description: Возвращает настройки текущего пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserSettings'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Получить настройки пользователя
+      tags:
+      - settings
+    put:
+      consumes:
+      - application/json
+      description: Обновляет настройки текущего пользователя (все поля опциональные)
+      parameters:
+      - description: Settings to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserSettings'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Обновить настройки пользователя
+      tags:
+      - settings
+  /webhook:
+    get:
+      description: Возвращает уникальный webhook URL пользователя для настройки GitHub
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Получить webhook URL
+      tags:
+      - webhook
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
