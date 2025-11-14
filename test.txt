@@ -2,3 +2,4 @@ Testing webhook integration
 # CommitCaster is now live! 🚀
 Testing OpenRouter API integration
 # Final test after Docker restart
+# Testing bot with channel @go_notion
