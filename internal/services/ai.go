@@ -72,8 +72,8 @@ func (s *AIService) GeneratePost(commitSummary, repoName string) (string, error)
 "Всем привет! Сегодня добавил функцию редактирования ответов в чат-боте. Было интересно разбираться с async/await, но в итоге всё получилось! Теперь пользователи могут исправлять свои сообщения. Завтра планирую добавить уведомления."`, commitSummary, repoName)
 	}
 
-	// Определяем модель
-	model := "llama-3.3-70b-versatile"
+	// Определяем модель (OpenRouter format)
+	model := "meta-llama/llama-3.3-70b-instruct"
 	if s.settings != nil && s.settings.AIModel != "" {
 		model = s.settings.AIModel
 	}
@@ -105,13 +105,15 @@ func (s *AIService) GeneratePost(commitSummary, repoName string) (string, error)
 		return "", fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", "https://api.groq.com/openai/v1/chat/completions", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", "https://openrouter.ai/api/v1/chat/completions", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
+	req.Header.Set("HTTP-Referer", "https://github.com/Minkaill/commit-caster-bot")
+	req.Header.Set("X-Title", "CommitCaster")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -122,7 +124,7 @@ func (s *AIService) GeneratePost(commitSummary, repoName string) (string, error)
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("groq API error (status %d): %s", resp.StatusCode, string(body))
+		return "", fmt.Errorf("AI API error (status %d): %s", resp.StatusCode, string(body))
 	}
 
 	var groqResp GroqResponse
